@@ -16,7 +16,7 @@ have a title for the task being done... What else? You tell me!
 
 `!stop` - Will stop the current ongoing pomodoro timer
 
-##Known Bugs
+## Known Bugs
 
 If you `!start` multiple times, the same message will update multiple times for the different instances.
 If you `!stop` and `!start` within a few seconds (<10) the same as above will happen
