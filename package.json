@@ -1,0 +1,23 @@
+{
+  "name": "anyadoro",
+  "version": "1.0.0",
+  "description": "Pomodoro App for in-sync work sessions",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/pedrocaldeira/Anyadoro.git"
+  },
+  "author": "Raisen",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/pedrocaldeira/Anyadoro/issues"
+  },
+  "homepage": "https://github.com/pedrocaldeira/Anyadoro#readme",
+  "dependencies": {
+    "discord.js": "^12.5.1",
+    "dotenv": "^8.2.0"
+  }
+}
