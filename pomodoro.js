@@ -2,16 +2,20 @@ require("dotenv").config();
 const { Client, MessageEmbed, Message } = require("discord.js");
 const client = new Client();
 
-// ready check for the bot to receive commands
-client.on("ready", () => {
-  console.log(`Logged in as ${client.user.tag}!`);
-});
-const pomMsgIds = []
+
+const pomMsgIds = [];
 const MESSAGE_UPDATE_FREQUENCY = 5; // in seconds
 const POMODORO_SESSION_TIME = 25; // in minutes
 
 let pomodoroMsg = null;
 let pomodoroStopped = false;
+
+
+// ready check for the bot to receive commands
+client.on("ready", () => {
+  console.log(`Logged in as ${client.user.tag}!`);
+});
+
 
 const getEmbed = (msgText) => {
   const embed = new MessageEmbed()
