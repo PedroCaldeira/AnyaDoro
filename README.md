@@ -9,7 +9,7 @@ have a title for the task being done... What else? You tell me!
 
 ## How to install the Discord Bot:
 1. Set an environment variable with your BOT_TOKEN in your hosting environment.
-2. >node app.js
+2. >node pomodoro.js
 
 ## Current features
 `!start` - Will start a pomodoro timer
