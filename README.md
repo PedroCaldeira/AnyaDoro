@@ -13,4 +13,5 @@ have a title for the task being done... What else? You tell me!
 
 ## Current features
 `!start` - Will start a pomodoro timer
+
 `!stop` - Will stop the current ongoing pomodoro timer
