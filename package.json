@@ -2,7 +2,7 @@
   "name": "anyadoro",
   "version": "1.0.0",
   "description": "Pomodoro App for in-sync work sessions",
-  "main": "pomodoro.js",
+  "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
