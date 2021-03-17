@@ -130,7 +130,7 @@
          }
  
          // Handle the custom command code
-         callback(message, arguments, arguments.join(' '), client)
+         callback(message, arguments, client)
  
          return
        }
