@@ -8,7 +8,7 @@ class PomodoroThreadHandler {
     this.creator = msg.author;
   }
   changeToBreak() {
-    return
+    return;
   }
   setupPomodoro() {
     this.pomodoro = new Pomodoro(workDuration, breakDuration);
