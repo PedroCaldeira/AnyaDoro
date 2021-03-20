@@ -1,44 +1,51 @@
+const { EventEmitter } = require("events");
+const Timer = require("./Timer");
+
 const PomodoroState = {
-  BREAK_TIME: "Break",
-  WORK_TIME: "Work",
+  BREAK_TIME: "break",
+  WORK_TIME: "work",
+  FINISHED: "finished",
 };
-class Pomodoro {
-  constructor(workTime, breakTime, msg) {
-    this.creator = msg.author;
+
+class Pomodoro extends EventEmitter {
+  constructor(workTime, breakTime, msg,maxWorkSessions) {
+    super();
+    this.currentSessionDuration = workTime;
     this.workTime = workTime < 120 * 60 ? workTime : 120 * 60;
+    this.maxWorkSessions = maxWorkSessions ? maxWorkSessions : 20;
     this.breakTime = breakTime < 120 * 60 ? breakTime : 120 * 60;
-    this.timeLeft = workTime + 1;
     this.state = PomodoroState.WORK_TIME;
+    this.setupTimer();
     this.isPaused = false;
     this.isFinished = false;
     this.workRounds = 0;
-    this.countdown();
     this.areUsersUpdated = true;
+    this.creator = msg.author;
   }
 
-  decreaseTimeLeft(seconds) {
-    this.timeLeft -= seconds;
+  setupTimer() {
+    this.timer = new Timer(this.workTime);
+    this.timer.start();
+
+    //  Once the timer finishes we go to the next state
+    this.timer.on("finish", () => {
+      this.goToNextState();
+    });
+  }
+
+  pause() {
+    isPaused = true;
+    this.timer.pause();
   }
 
   getTimeLeftText() {
-    const hours = Math.floor(this.timeLeft / 3600);
-    const minutes = Math.floor((this.timeLeft % 3600) / 60);
-    const seconds = this.timeLeft % 60;
-    const secondsStr = seconds < 10 ? `0${seconds}` : `${seconds}`;
-    const minutesStr = minutes < 10 ? `0${minutes}` : `${minutes}`;
-    const hoursStr = hours < 10 ? `0${hours}` : `${hours}`;
-    let result = hoursStr + ":" + minutesStr + ":" + secondsStr;
-    if (hours === 0) result = result.slice(3);
-    return result;
-  }
-  pause() {
-    this.isPaused = true;
+    return this.timer.getFormattedTime();
   }
 
-  unpause() {
+  resume() {
     if (this.isPaused) {
       this.isPaused = false;
-      this.countdown();
+      this.timer.resume();
     }
   }
 
@@ -46,31 +53,44 @@ class Pomodoro {
     this.isFinished = true;
   }
 
-  nextState() {
-    if (this.workRounds === 10) this.isFinished = true;
-    if (this.state === PomodoroState.WORK_TIME) {
+  resetTimer() {
+    this.timer.setTime(this.currentSessionDuration);
+    this.timer.start();
+  }
+
+  goToBreakState() {
+    this.state = PomodoroState.BREAK_TIME;
+    this.currentSessionDuration = this.breakTime;
+    this.resetTimer();
+    this.emit(PomodoroState.BREAK_TIME);
+  }
+
+  goToWorkState() {
+    this.state = PomodoroState.WORK_TIME;
+    this.currentSessionDuration = this.workTime;
+    this.resetTimer();
+    this.emit(PomodoroState.WORK_TIME);
+  }
+
+  goToFinishedState() {
+    this.state = PomodoroState.FINISHED;
+    this.emit(PomodoroState.FINISHED);
+  }
+
+  goToNextState() {
+    if (this.workRounds === this.maxWorkSessions) {
       this.workRounds += 1;
-      this.state = PomodoroState.BREAK_TIME;
-      this.timeLeft = this.breakTime;
+      this.goToFinishedState();
+    } else if (this.state === PomodoroState.WORK_TIME) {
+      this.workRounds += 1;
+      this.goToBreakState();
       this.areUsersUpdated = false;
     } else if (this.state === PomodoroState.BREAK_TIME) {
-      this.state = PomodoroState.WORK_TIME;
-      this.timeLeft = this.workTime;
       this.areUsersUpdated = false;
+      this.goToWorkState();
     }
   }
 
-  countdown() {
-    if (this.timeLeft <= 0) {
-      this.nextState();
-    }
-    if (!this.isFinished && !this.isPaused) {
-      this.timeLeft -= 1;
-      setTimeout(() => {
-        this.countdown();
-      }, 1000);
-    }
-  }
   getCreatorUsername() {
     return this.creator.username;
   }
@@ -79,8 +99,8 @@ class Pomodoro {
   }
 
   getStateMsg(users) {
-    if (this.isFinished){
-        return users + " hope you got good work done with this session! Bye!"
+    if (this.isFinished) {
+      return users + " hope you got good work done with this session! Bye!";
     }
     if (this.state === PomodoroState.WORK_TIME) {
       return users + " It's time to get back to Work!";
@@ -90,8 +110,8 @@ class Pomodoro {
   }
   getTitle() {
     return this.state === PomodoroState.WORK_TIME
-      ? "Study Session"
-      : "Break Time";
+      ? "Now: Work Session"
+      : "Now: Break Time";
   }
   getDescription() {
     return `Time left: ${this.getTimeLeftText()} ${
