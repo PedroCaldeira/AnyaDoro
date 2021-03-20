@@ -7,7 +7,9 @@ class PomodoroThreadHandler {
     this.setupPomodoro();
     this.creator = msg.author;
   }
-
+  changeToBreak() {
+    return;
+  }
   setupPomodoro() {
     this.pomodoro = new Pomodoro(workDuration, breakDuration);
     this.pomodoro.on("finish", () => {
