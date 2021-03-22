@@ -1,122 +1,125 @@
 const { EventEmitter } = require("events");
 const Timer = require("./Timer");
 
+const breakState = {
+  state: "break",
+
+  startState: (pomodoro) => {
+    console.log("Break: Start");
+    pomodoro.currentSessionDuration = pomodoro.breakTime;
+    pomodoro.resetTimer();
+    pomodoro.startTimer();
+  },
+
+  goToNextState: (pomodoro) => {
+    console.log("Break: Next");
+    pomodoro.transitionToState(PomodoroState.WORK_TIME);
+  },
+};
+
+const workState = {
+  state: "work",
+
+  startState: (pomodoro) => {
+    console.log("Work: Start");
+    pomodoro.currentSessionDuration = pomodoro.workTime;
+    pomodoro.resetTimer();
+    pomodoro.startTimer();
+  },
+
+  goToNextState: (pomodoro) => {
+    console.log("Work: Next");
+    pomodoro.workRounds += 1;
+    pomodoro.workRounds === pomodoro.maxWorkSessions
+      ? pomodoro.transitionToState(PomodoroState.FINISH)
+      : pomodoro.transitionToState(PomodoroState.BREAK_TIME);
+  },
+};
+
+const finishedState = {
+  state: "finish",
+  startState: (pomodoro) => {
+    console.log("Finish: Start");
+    pomodoro.isFinished = true;
+    pomodoro.pause();
+    return;
+  },
+
+  goToNextState: () => {
+    return;
+  },
+};
+
 const PomodoroState = {
-  BREAK_TIME: "break",
-  WORK_TIME: "work",
-  FINISHED: "finished",
+  BREAK_TIME: breakState,
+  WORK_TIME: workState,
+  FINISH: finishedState,
 };
 
 class Pomodoro extends EventEmitter {
-  constructor(workTime, breakTime, msg,maxWorkSessions) {
+  constructor(workTime, breakTime, maxWorkSessions) {
     super();
     this.currentSessionDuration = workTime;
-    this.workTime = workTime < 120 * 60 ? workTime : 120 * 60;
-    this.maxWorkSessions = maxWorkSessions ? maxWorkSessions : 20;
-    this.breakTime = breakTime < 120 * 60 ? breakTime : 120 * 60;
-    this.state = PomodoroState.WORK_TIME;
-    this.setupTimer();
+    this.workTime = workTime < 120 * 60 ? workTime : 120 * 60; //  max 2 hours
+    this.maxWorkSessions = maxWorkSessions ? maxWorkSessions : 5; //  default 5
+    this.breakTime = breakTime < 120 * 60 ? breakTime : 120 * 60; //  max 2 hours
+
     this.isPaused = false;
     this.isFinished = false;
     this.workRounds = 0;
-    this.areUsersUpdated = true;
-    this.creator = msg.author;
+    this.setupTimer();
+
+    this.state = PomodoroState.WORK_TIME;
   }
 
   setupTimer() {
     this.timer = new Timer(this.workTime);
-    this.timer.start();
 
     //  Once the timer finishes we go to the next state
     this.timer.on("finish", () => {
-      this.goToNextState();
+      this.goToNextState(this);
     });
   }
 
+  start() {
+    this.state.startState(this);
+  }
+
+  startTimer() {
+    this.timer.start();
+  }
+
   pause() {
-    isPaused = true;
+    this.isPaused = true;
     this.timer.pause();
   }
 
-  getTimeLeftText() {
+  resume() {
+    this.isPaused = false;
+    this.timer.resume();
+  }
+
+  transitionToState(state) {
+    this.state = state;
+  }
+
+  getTimeLeft() {
     return this.timer.getFormattedTime();
   }
 
-  resume() {
-    if (this.isPaused) {
-      this.isPaused = false;
-      this.timer.resume();
-    }
-  }
-
   finish() {
-    this.isFinished = true;
+    this.transitionToState(PomodoroState.FINISH);
+    this.state.startState(this);
   }
 
   resetTimer() {
     this.timer.setTime(this.currentSessionDuration);
-    this.timer.start();
-  }
-
-  goToBreakState() {
-    this.state = PomodoroState.BREAK_TIME;
-    this.currentSessionDuration = this.breakTime;
-    this.resetTimer();
-    this.emit(PomodoroState.BREAK_TIME);
-  }
-
-  goToWorkState() {
-    this.state = PomodoroState.WORK_TIME;
-    this.currentSessionDuration = this.workTime;
-    this.resetTimer();
-    this.emit(PomodoroState.WORK_TIME);
-  }
-
-  goToFinishedState() {
-    this.state = PomodoroState.FINISHED;
-    this.emit(PomodoroState.FINISHED);
   }
 
   goToNextState() {
-    if (this.workRounds === this.maxWorkSessions) {
-      this.workRounds += 1;
-      this.goToFinishedState();
-    } else if (this.state === PomodoroState.WORK_TIME) {
-      this.workRounds += 1;
-      this.goToBreakState();
-      this.areUsersUpdated = false;
-    } else if (this.state === PomodoroState.BREAK_TIME) {
-      this.areUsersUpdated = false;
-      this.goToWorkState();
-    }
-  }
-
-  getCreatorUsername() {
-    return this.creator.username;
-  }
-  getCreatorAvatarUrl() {
-    return this.creator.avatarURL();
-  }
-
-  getStateMsg(users) {
-    if (this.isFinished) {
-      return users + " hope you got good work done with this session! Bye!";
-    }
-    if (this.state === PomodoroState.WORK_TIME) {
-      return users + " It's time to get back to Work!";
-    } else if (this.state === PomodoroState.BREAK_TIME) {
-      return users + " It's time for the deserved Break!";
-    }
-  }
-  getTitle() {
-    return this.state === PomodoroState.WORK_TIME
-      ? "Now: Work Session"
-      : "Now: Break Time";
-  }
-  getDescription() {
-    return `Time left: ${this.getTimeLeftText()} ${
-      this.isFinished ? "- Stopped!" : this.isPaused ? "- Paused" : ""
-    }`;
+    this.state.goToNextState(this);
+    this.state.startState(this);
+    this.emit(this.state.state);
   }
 }
 

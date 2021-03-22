@@ -4,7 +4,7 @@ class Timer extends EventEmitter {
   constructor(seconds) {
     super();
     this.seconds = seconds;
-    this.ticking = true;
+    this.ticking = false;
   }
 
   setTime(seconds) {
@@ -50,7 +50,7 @@ class Timer extends EventEmitter {
   }
 
   start() {
-    this.countdown();
+    this.resume();
   }
 
   countdown() {
@@ -58,9 +58,8 @@ class Timer extends EventEmitter {
       this.emit("finish");
       return;
     } else if (this.ticking) {
-      // console.log(this.getFormattedTime());
       this.tickDown();
-      return setTimeout(() => {
+      setTimeout(() => {
         this.countdown();
       }, 1000);
     }
