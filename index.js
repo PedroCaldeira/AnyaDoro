@@ -29,7 +29,7 @@ client.on("ready", () => {
       }
     }
   };
-
+ 
   readCommands("cmds");
 });
 
