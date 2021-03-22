@@ -1,4 +1,5 @@
 # AnyaDoro
+
 A Pomodoro for our Community
 
 Let's be crazy and create our own pomodoro project, suiting our community's specific wants and needs :) A few features it should probably have:
@@ -8,15 +9,14 @@ have customizable times (25 min or 50 min work, 5, 10 or 20 min breaks)
 have a title for the task being done... What else? You tell me!
 
 ## How to install the Discord Bot:
+
 1. Set an environment variable with your BOT_TOKEN in your hosting environment.
-2. >node pomodoro.js
+2. > node pomodoro.js
+
+## How to run work session
+
+`!start-pom <work duration> <break duration> <# work sessions(optional:default 5)> ` - Will start a pomodoro timer
 
 ## Current features
-`!start` - Will start a pomodoro timer
 
-`!stop` - Will stop the current ongoing pomodoro timer
-
-## Known Bugs
-
-1. If you `!start` multiple times, the same message will update multiple times for the different instances.
-2. If you `!stop` and `!start` within a few seconds (<10) the same as above will happen
+Reaction Controls with 👀, ❌, ⏸️ and ▶️

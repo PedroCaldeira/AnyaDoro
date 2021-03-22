@@ -43,7 +43,7 @@ const createNewPomodoroSession = (message, arguments, client) => {
 };
 
 module.exports = {
-  commands: "start-pom-dev",
+  commands: "start-pom",
   expectedArgs: " <work time> <break time> <work sessions (default:5)>",
   permissionError: "You do not have permission to run this command.",
   minArgs: 2,
