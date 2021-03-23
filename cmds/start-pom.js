@@ -2,6 +2,7 @@ const Pomodoro = require("../utils/pomodoro");
 const { MessageEmbed } = require("discord.js");
 const { PomodoroThreadHandler } = require("../utils/pom-session-handler");
 const { SimpleMessageFormatter } = require("../utils/pom-simple-msg-formatter");
+const { config } = require("dotenv");
 
 const reactionAvailableCommands = ["👀", "❌", "⏸️"];
 const commandsCallbacks = {
@@ -20,13 +21,13 @@ const commandsCallbacks = {
 };
 
 const createNewPomodoroSession = (message, arguments, client) => {
-  config = {
+  const config = {
     workTime: +arguments[0] * 60,
     breakTime: +arguments[1] * 60,
     workSessions: +arguments[2],
   };
-  if (config.workTime <= 0 || config.breakTime <= 0) {
-    message.reply("the work/break session duration times must be positive.");
+  if (config.workTime <= 0 || config.breakTime <= 0 || config.workSessions <=0) {
+    message.reply("Duration times and Number of work sessions must be positive.");
     return;
   }
   try {
