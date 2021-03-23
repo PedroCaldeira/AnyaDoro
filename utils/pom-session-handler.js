@@ -169,9 +169,9 @@ class PomodoroSessionHandler {
 
           const command = reaction.emoji.name;
           const userId = reaction.users.cache.lastKey();
+          const creatorId = this.creatorMessage.author.id;
           //is reaction an available command?
-          this.availableCommands.includes(command) &&
-          userId === this.creatorMessage.author.id
+          this.availableCommands.includes(command) && userId === creatorId
             ? this.commandsCallbacks[command](this)
             : reaction.users.remove(userId);
 
