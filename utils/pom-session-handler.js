@@ -2,7 +2,7 @@ const { Message } = require("discord.js");
 const Pomodoro = require("./pomodoro");
 
 const pomodoroReactionsFilter = (reaction, user) => {
-  return !user.bot && reaction.emoji.name !== "👀"; //  special reaction which doesn't need immediate action
+  return !user.bot && reaction.emoji.name !== "👀"; //  Special reaction which doesn't need immediate action
 };
 class PomodoroSessionHandler {
   constructor(
@@ -86,6 +86,8 @@ class PomodoroSessionHandler {
 
   pauseCommandHandler() {
     this.pomodoro.pause();
+
+    this.pomodoroThread.reactions.resolve("⏸️").remove();
     this.pomodoroThread.react("▶️");
     this.availableCommands = this.availableCommands.filter(
       (command) => command !== "⏸️"
@@ -104,6 +106,7 @@ class PomodoroSessionHandler {
 
   resumeCommandHandler() {
     this.pomodoro.resume();
+    this.pomodoroThread.reactions.resolve("▶️").remove();
     this.pomodoroThread.react("⏸️");
     this.availableCommands = this.availableCommands.filter(
       (command) => command !== "▶️"
@@ -163,13 +166,15 @@ class PomodoroSessionHandler {
       .then((collected) => {
         if (!this.pomodoro.isFinished) {
           const reaction = collected.first();
-          const command = reaction.emoji.name;
-          this.pomodoroThread.reactions.resolve(reaction).remove();
 
+          const command = reaction.emoji.name;
+          const userId = reaction.users.cache.lastKey();
+          const creatorId = this.creatorMessage.author.id;
           //is reaction an available command?
-          if (this.availableCommands.includes(command)) {
-            this.commandsCallbacks[command](this);
-          }
+          this.availableCommands.includes(command) && userId === creatorId
+            ? this.commandsCallbacks[command](this)
+            : reaction.users.remove(userId);
+
           this.setupControlsHook();
           this.updateThread();
         }
