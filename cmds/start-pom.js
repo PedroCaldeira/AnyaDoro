@@ -26,6 +26,10 @@ const createNewPomodoroSession = (message, arguments, client) => {
     breakTime: +arguments[1] * 60,
     workSessions: +arguments[2],
   };
+  if (isNaN(config.workTime) || isNaN(config.breakTime) || isNaN(config.workSessions)){
+    message.reply("Only numbers as arguments!");
+    return;
+  }
   if (config.workTime <= 0 || config.breakTime <= 0 || config.workSessions <=0) {
     message.reply("Duration times and Number of work sessions must be positive.");
     return;
